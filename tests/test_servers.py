@@ -1,32 +1,59 @@
-from servers import (
+from models.servers import (
     add_server,
-    check_server_capacity,
     filter_servers_by_capacity,
     find_server,
+    find_server_by_id,
     sort_servers,
+    Server
 )
 
 
+def test_server_creation():
+    server = Server(1, "Сервер бухгалтерии", 50)
+    assert server.id == 1
+    assert server.name == "Сервер бухгалтерии"
+    assert server.storage_capacity == 50
+
+
+def test_server_has_free_space():
+    server = Server(1, "Сервер бухгалтерии", 50)
+    assert server.has_free_space(30)
+    assert not server.has_free_space(60)
+
+
+def test_server_validate_capacity():
+    assert Server.validate_capacity(50)
+    assert not Server.validate_capacity(-10)
+
+
+def test_server_from_data():
+    data = {"id": 1, "name": "Сервер отдела кадров", "storage_capacity": 100}
+    server = Server.from_data(data)
+    assert server.id == 1
+    assert server.storage_capacity == 100
+
+
 def test_add_server():
-    servers = {}
-    add_server(servers, "Сервер бухгалтерии", 50)
+    servers = []
+    add_server(servers, "Сервер отдела кадров", 100)
     assert len(servers) == 1
 
 
 def test_find_server():
-    servers = {}
+    servers = []
     add_server(servers, "Сервер бухгалтерии", 50)
     assert find_server(servers, "бухгалтерии")
 
 
-def test_check_server_capacity():
-    servers = {}
-    server_id = add_server(servers, "Сервер отдела кадров", 100)
-    assert check_server_capacity(servers, server_id, 80)
+def test_find_server_by_id():
+    servers = []
+    server = add_server(servers, "Сервер бухгалтерии", 50)
+    assert find_server_by_id(servers, server.id) is server
+    assert find_server_by_id(servers, 999) is None
 
 
 def test_filter_servers_by_capacity():
-    servers = {}
+    servers = []
     add_server(servers, "Сервер A", 20)
     add_server(servers, "Сервер B", 80)
     filtered = filter_servers_by_capacity(servers, 50)
@@ -34,8 +61,8 @@ def test_filter_servers_by_capacity():
 
 
 def test_sort_servers():
-    servers = {}
+    servers = []
     add_server(servers, "Сервер A", 20)
     add_server(servers, "Сервер B", 80)
-    sorted_result = sort_servers(servers)
-    assert sorted_result[0][1]["storage_capacity"] == 80
+    sorted_servers = sort_servers(servers)
+    assert sorted_servers[0].storage_capacity == 80
